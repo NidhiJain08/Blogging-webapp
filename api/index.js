@@ -3,30 +3,65 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import User from './models/Users.js';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
 
-const app=express();
-const saltRounds = 10; // Number of salt rounds (cost factor)
-const salt = await bcrypt.genSalt(saltRounds);
+const app = express();
+const saltRounds = 10;
 
-app.use(cors());
+app.use(cors({credentials:true,origin:'http://localhost:3000'}));
 app.use(express.json());
+app.use(cookieParser());
 
 mongoose.connect('mongodb+srv://nidhijainvision:qJf69YSiMp93IELy@cluster0.bdkemnl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0');
 
-app.post('/register',async(req,res)=>{
-    const {username,password}=req.body;
-    try{
-        const userDoc=await User.create({username,password:bcrypt.hashSync(password,salt)});
-        res.json(userDoc);
+app.post('/register', async (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
     }
-    catch(e){
+
+    try {
+        const salt = await bcrypt.genSalt(saltRounds);
+        const hashedPassword = bcrypt.hashSync(password, salt);
+        const userDoc = await User.create({ username, password: hashedPassword });
+        res.json(userDoc);
+    } catch (e) {
         res.status(400).json(e);
     }
-    
 });
 
-app.listen(4000,()=>{
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    console.log('Login request received for username:', username);
+    
+    const userDoc = await User.findOne({ username });
+    if (!userDoc) {
+        console.log('User not found:', username);
+        return res.status(400).json({ error: 'Invalid username or password' });
+    }
+
+    const passOk = bcrypt.compareSync(password, userDoc.password);
+    if (!passOk) {
+        console.log('Incorrect password for username:', username);
+        return res.status(400).json({ error: 'Invalid username or password' });
+    }
+    else{
+
+    }
+
+    const token = jwt.sign({ username: userDoc.username }, 'your_jwt_secret');
+    res.cookie('token',token).json('ok');
+});
+
+app.get('/profile',(req,res)=>{
+const{token}=req.cookies;
+jwt.verify(token,secret,{},(err,info)=>{
+    if(err) throw err;
+    res.json(info);
+});
+});
+
+app.listen(4000, () => {
     console.log('Server is running on port 4000');
 });
-
-//
