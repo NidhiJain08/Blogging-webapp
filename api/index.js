@@ -8,12 +8,12 @@ import cookieParser from 'cookie-parser';
 
 const app = express();
 const saltRounds = 10;
-
+const secret = 'asdfe45we45w345wegw345werjktjwertkj';
 app.use(cors({credentials:true,origin:'http://localhost:3000'}));
 app.use(express.json());
 app.use(cookieParser());
 
-mongoose.connect('');
+mongoose.connect(' ');
 
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
@@ -42,17 +42,32 @@ app.post('/login', async (req, res) => {
     }
 
     const passOk = bcrypt.compareSync(password, userDoc.password);
-    if (!passOk) {
-        console.log('Incorrect password for username:', username);
-        return res.status(400).json({ error: 'Invalid username or password' });
-    }
-    else{
+    // if (passOk) {
+    //     console.log('Incorrect password for username:', username);
+    //     return res.status(400).json({ error: 'Invalid username or password' });
+    // }
+    // else{
 
-    }
-
-    const token = jwt.sign({ username: userDoc.username }, 'your_jwt_secret');
-    res.cookie('token',token).json('ok');
+    // }
+    // const token = jwt.sign({ username: userDoc.username }, 'your_jwt_secret');
+    // res.cookie('token',token).json('ok');
+    if (passOk) {
+        // logged in
+        jwt.sign({username,id:userDoc._id}, secret, {}, (err,token) => {
+          if (err) throw err;
+          res.cookie('token', token).json({
+            id:userDoc._id,
+            username,
+          });
+        });
+      } else {
+        res.status(400).json('wrong credentials');
+      }
 });
+
+app.post('/logout',(req,res)=>{
+    res.cookie('token','').json('ok');
+})
 
 app.get('/profile',(req,res)=>{
 const{token}=req.cookies;

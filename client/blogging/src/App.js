@@ -6,21 +6,30 @@ import IndexPage from './pages/IndexPage';
 import {Routes,Route} from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import { UserContextProvider } from './userContext';
+import CreatePost from './pages/CreatePost';
 
 const App=()=>{
    return (
+
+     <UserContextProvider>
+    
     <Routes>
 
-        <Route path="/" element={<Layout/>}>
+<Route path="/" element={<Layout/>}>
 
-        <Route index element ={ <IndexPage/> }/>
-         
-       <Route path="Login" element={ <LoginPage/> }   />
-       <Route path="Register" element={ <RegisterPage/> }   />
+<Route index element ={ <IndexPage/> }/>
+ 
+<Route path="/login" element={ <LoginPage/> }   />
+<Route path="/register" element={ <RegisterPage/> }   />
+<Route path="/create" element={<CreatePost/>}   />
+</Route>
 
-       </Route>
-       
-    </Routes>  
+</Routes>  
+
+     </UserContextProvider>
+
+    
    );
 }
 

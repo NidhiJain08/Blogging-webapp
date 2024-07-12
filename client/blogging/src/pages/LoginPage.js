@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Navigate } from "react-router-dom";
+import userContext from "../userContext";
 
 const LoginPage = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [redirect,setRedirect]=useState(false);
+    const {setUserInfo}=useContext(userContext);
+
     async function login(ev) {
         ev.preventDefault();
         setError(''); // Clear any previous error
@@ -19,8 +22,11 @@ const LoginPage = () => {
             const data = await response.json();
             if (response.ok) {
                 console.log('Login successful:', data);
+                
+                setUserInfo(data);
                 setRedirect(true);
-            } else {
+            
+         } else {
                 setError(data.error || 'Login failed');
             }
         } catch (error) {
